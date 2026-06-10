@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pametan sef | Smart Anti-Theft Safe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="topbar">
+      <div>
+        <p class="eyebrow">Smart Anti-Theft Safe</p>
+        <h1>Pametan sef</h1>
+      </div>
+      <div class="connection-pill" id="connectionStatus">
+        <span class="dot"></span>
+        <span>Offline</span>
+      </div>
+    </section>
+
+    <section class="alarm-banner hidden" id="alarmBanner">
+      <div>
+        <strong>Alarm aktivan</strong>
+        <span>Detektovan je pokusaj obijanja, udarac ili nagib sefa.</span>
+      </div>
+      <button class="ghost-danger" id="resetAlarmTopBtn" type="button">Reset alarm</button>
+    </section>
+
+    <section class="hero-grid">
+      <article class="status-panel">
+        <div class="panel-header">
+          <span>Status sefa</span>
+          <span class="status-badge locked" id="safeStatus">Zakljucan</span>
+        </div>
+
+        <div class="safe-visual" id="safeVisual" aria-hidden="true">
+          <div class="safe-door">
+            <div class="safe-handle"></div>
+            <div class="safe-keypad">
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <button class="primary-button" id="lockBtn" type="button">Zakljucaj</button>
+          <button class="secondary-button" id="unlockBtn" type="button">Otkljucaj</button>
+          <button class="danger-button" id="resetAlarmBtn" type="button">Reset alarm</button>
+        </div>
+      </article>
+
+      <aside class="summary-grid">
+        <article class="metric-card">
+          <span>Alarm</span>
+          <strong id="alarmState">Normalno</strong>
+          <small id="lastEvent">Nema dogadjaja</small>
+        </article>
+        <article class="metric-card">
+          <span>Security level</span>
+          <strong id="securityLevel">LOW</strong>
+          <small>Na osnovu pomeranja i nagiba</small>
+        </article>
+        <article class="metric-card">
+          <span>Ukupno pokusaja</span>
+          <strong id="breakInCount">0</strong>
+          <small>Brojac iz istorije dogadjaja</small>
+        </article>
+        <article class="metric-card">
+          <span>Poslednje otkljucavanje</span>
+          <strong id="lastUnlock">-</strong>
+          <small>Firebase events</small>
+        </article>
+      </aside>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-title">
+          <h2>Senzori</h2>
+          <span id="sensorUpdated">Realtime</span>
+        </div>
+
+        <div class="sensor-list">
+          <div class="sensor-item">
+            <div>
+              <span>Pomeranje</span>
+              <strong id="movementValue">0</strong>
+            </div>
+            <div class="bar"><span id="movementBar"></span></div>
+          </div>
+
+          <div class="sensor-item">
+            <div>
+              <span>Nagib</span>
+              <strong id="tiltValue">0 deg</strong>
+            </div>
+            <div class="bar"><span id="tiltBar"></span></div>
+          </div>
+
+          <div class="sensor-item split">
+            <div>
+              <span>Vibracija / udarac</span>
+              <strong id="vibrationValue">Ne</strong>
+            </div>
+            <span class="vibration-dot" id="vibrationDot"></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-title">
+          <h2>Kamera</h2>
+          <span>ESP32-CAM</span>
+        </div>
+        <label class="camera-label" for="cameraUrlInput">Camera stream URL</label>
+        <div class="camera-row">
+          <input id="cameraUrlInput" type="url" placeholder="http://192.168.1.50:81/stream" />
+          <button class="secondary-button compact" id="saveCameraBtn" type="button">Sacuvaj</button>
+        </div>
+        <a class="camera-link disabled" id="cameraLink" target="_blank" rel="noreferrer">Otvori live kameru</a>
+      </article>
+    </section>
+
+    <section class="panel events-panel">
+      <div class="panel-title">
+        <h2>Istorija dogadjaja</h2>
+        <span>Najnoviji prvo</span>
+      </div>
+      <div class="events-list" id="eventsList">
+        <div class="empty-state">Nema ucitanih dogadjaja.</div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
