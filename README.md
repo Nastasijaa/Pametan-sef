@@ -10,7 +10,12 @@ web-app/
   style.css
   script.js
 esp32/
-  pametan_sef.ino
+  pametan_sef/
+    pametan_sef.ino
+esp32-cam/
+  pametan_sef_camera/
+    pametan_sef_camera.ino
+platformio.ini
 README.md
 ```
 
@@ -89,7 +94,7 @@ const firebaseConfig = {
 };
 ```
 
-5. U `esp32/pametan_sef.ino` zameni:
+5. U `esp32/pametan_sef/pametan_sef.ino` zameni:
 
 ```cpp
 #define WIFI_SSID "WIFI_SSID"
@@ -117,7 +122,32 @@ Dashboard u realnom vremenu cita `safe` i `events` iz Firebase-a. Dugmad upisuju
 - `Otkljucaj`: `commands/unlock = true`, `commands/lock = false`
 - `Reset alarm`: `safe/alarm = false`
 
-## Upload koda na ESP32
+## Upload koda iz VS Code / PlatformIO
+
+1. Instaliraj VS Code ekstenziju `PlatformIO IDE`.
+2. Otvori ovaj folder projekta u VS Code-u.
+3. Za glavni ESP32 sef izaberi environment `smart_safe`.
+4. Klikni `Upload`, ili u terminalu pokreni:
+
+```bash
+pio run -e smart_safe -t upload
+```
+
+5. Za ESP32-CAM izaberi environment `esp32_camera`, ili pokreni:
+
+```bash
+pio run -e esp32_camera -t upload
+```
+
+6. Serial Monitor mozes otvoriti iz PlatformIO taba ili komandom:
+
+```bash
+pio device monitor -b 115200
+```
+
+Napomena: ESP32-CAM sketch ocekuje da se u `esp32-cam/pametan_sef_camera/` nalaze i fajlovi iz Arduino primera `CameraWebServer`, posebno `camera_pins.h` i `app_httpd.cpp`.
+
+## Upload koda na ESP32 iz Arduino IDE
 
 1. Instaliraj Arduino IDE ili PlatformIO.
 2. U Arduino IDE dodaj ESP32 board paket.
@@ -126,7 +156,7 @@ Dashboard u realnom vremenu cita `safe` i `events` iz Firebase-a. Dugmad upisuju
    - `ESP32Servo`
    - `Adafruit MPU6050`
    - `Adafruit Unified Sensor`
-4. Otvori `esp32/pametan_sef.ino`.
+4. Otvori `esp32/pametan_sef/pametan_sef.ino`.
 5. Unesi Wi-Fi i Firebase podatke.
 6. Izaberi odgovarajuci ESP32 DevKit board i COM port.
 7. Klikni Upload.

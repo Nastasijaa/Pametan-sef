@@ -374,6 +374,37 @@ button:hover {
   align-items: stretch;
 }
 
+.camera-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #101828;
+}
+
+.camera-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-preview span {
+  padding: 16px;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
 input {
   width: 100%;
   min-width: 0;

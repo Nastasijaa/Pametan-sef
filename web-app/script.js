@@ -40,6 +40,8 @@ const elements = {
   sensorUpdated: document.getElementById("sensorUpdated"),
   cameraUrlInput: document.getElementById("cameraUrlInput"),
   saveCameraBtn: document.getElementById("saveCameraBtn"),
+  cameraStream: document.getElementById("cameraStream"),
+  cameraPlaceholder: document.getElementById("cameraPlaceholder"),
   cameraLink: document.getElementById("cameraLink"),
   eventsList: document.getElementById("eventsList")
 };
@@ -72,16 +74,32 @@ function updateStatus(status) {
   elements.safeStatus.classList.toggle("unlocked", normalized === "unlocked");
 }
 
-function updateCameraLink(cameraUrl) {
+function updateCameraLink(cameraUrl, forceReload = false) {
   const url = typeof cameraUrl === "string" ? cameraUrl.trim() : "";
   elements.cameraUrlInput.value = url;
 
   if (!url) {
+    elements.cameraStream.removeAttribute("src");
+    elements.cameraStream.classList.add("hidden");
+    elements.cameraPlaceholder.textContent = "Nema sacuvanog stream URL-a";
+    elements.cameraPlaceholder.classList.remove("hidden");
     elements.cameraLink.removeAttribute("href");
     elements.cameraLink.classList.add("disabled");
     return;
   }
 
+  if (forceReload) {
+    elements.cameraStream.removeAttribute("src");
+  }
+
+  if (forceReload || elements.cameraStream.src !== url) {
+    elements.cameraPlaceholder.textContent = "Ucitavanje stream-a...";
+    elements.cameraPlaceholder.classList.remove("hidden");
+    const separator = url.includes("?") ? "&" : "?";
+    elements.cameraStream.src = forceReload ? `${url}${separator}t=${Date.now()}` : url;
+  }
+
+  elements.cameraStream.classList.remove("hidden");
   elements.cameraLink.href = url;
   elements.cameraLink.classList.remove("disabled");
 }
@@ -144,6 +162,15 @@ function isUnlockEvent(event) {
   return type.includes("unlock") || message.includes("otklj");
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function renderEvents(snapshot) {
   const events = [];
 
@@ -173,8 +200,8 @@ function renderEvents(snapshot) {
 
     return `
       <article class="event-item">
-        <span class="event-type ${typeClass}">${type}</span>
-        <span class="event-message">${message}</span>
+        <span class="event-type ${typeClass}">${escapeHtml(type)}</span>
+        <span class="event-message">${escapeHtml(message)}</span>
         <span class="event-time">${formatTimestamp(event.timestamp)}</span>
       </article>
     `;
@@ -213,12 +240,22 @@ elements.lockBtn.addEventListener("click", () => writeCommand("lock"));
 elements.unlockBtn.addEventListener("click", () => writeCommand("unlock"));
 elements.resetAlarmBtn.addEventListener("click", resetAlarm);
 elements.resetAlarmTopBtn.addEventListener("click", resetAlarm);
+elements.cameraStream.addEventListener("load", () => {
+  elements.cameraPlaceholder.classList.add("hidden");
+});
+elements.cameraStream.addEventListener("error", () => {
+  elements.cameraStream.classList.add("hidden");
+  elements.cameraPlaceholder.textContent = "Stream nije dostupan";
+  elements.cameraPlaceholder.classList.remove("hidden");
+});
 elements.saveCameraBtn.addEventListener("click", () => {
   if (!refs) {
     return;
   }
 
-  refs.safe.update({ cameraUrl: elements.cameraUrlInput.value.trim() });
+  const cameraUrl = elements.cameraUrlInput.value.trim();
+  updateCameraLink(cameraUrl, true);
+  refs.safe.update({ cameraUrl });
 });
 
 renderSafe({
