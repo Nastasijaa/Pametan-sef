@@ -90,8 +90,7 @@ h2 {
   color: var(--muted);
 }
 
-.dot,
-.vibration-dot {
+.dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -102,8 +101,7 @@ h2 {
   color: var(--success);
 }
 
-.connection-pill.online .dot,
-.vibration-dot.active {
+.connection-pill.online .dot {
   background: var(--success);
 }
 
@@ -259,14 +257,9 @@ button:hover {
   background: #eaf2ff;
 }
 
-.danger-button,
-.ghost-danger {
+.danger-button {
   color: #fff;
   background: var(--danger);
-}
-
-.ghost-danger {
-  padding: 10px 14px;
 }
 
 .compact {
@@ -347,22 +340,6 @@ button:hover {
   border-radius: inherit;
   background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
   transition: width 0.25s ease;
-}
-
-.split {
-  align-items: center;
-  padding-top: 4px;
-}
-
-.vibration-dot {
-  width: 18px;
-  height: 18px;
-  background: #c7d0de;
-}
-
-.vibration-dot.active {
-  background: var(--danger);
-  box-shadow: 0 0 0 7px rgba(219, 47, 59, 0.12);
 }
 
 .camera-label {
@@ -482,6 +459,64 @@ input {
   padding: 16px;
   border: 1px dashed var(--line);
   border-radius: 8px;
+}
+
+.pin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(12, 18, 32, 0.88);
+}
+
+.pin-panel {
+  width: min(420px, 100%);
+  padding: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.pin-alert {
+  display: inline-flex;
+  margin-bottom: 10px;
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pin-panel h2 {
+  font-size: 1.6rem;
+}
+
+.pin-panel p {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.pin-panel form {
+  display: grid;
+  gap: 12px;
+}
+
+.pin-panel input {
+  text-align: center;
+  font-size: 1.7rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.pin-error {
+  display: block;
+  margin-top: 10px;
+  color: var(--danger);
+  font-weight: 800;
 }
 
 @media (max-width: 900px) {

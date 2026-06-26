@@ -16,11 +16,14 @@ const isFirebaseConfigured = Object.values(firebaseConfig).every((value) => {
 
 let database = null;
 let refs = null;
+let pinOverlayVisible = false;
+
+const ALARM_TILT_THRESHOLD_DEG = 45;
+const ALARM_PIN = "000";
 
 const elements = {
   connectionStatus: document.getElementById("connectionStatus"),
   alarmBanner: document.getElementById("alarmBanner"),
-  resetAlarmTopBtn: document.getElementById("resetAlarmTopBtn"),
   safeStatus: document.getElementById("safeStatus"),
   safeVisual: document.getElementById("safeVisual"),
   alarmState: document.getElementById("alarmState"),
@@ -30,20 +33,21 @@ const elements = {
   lastUnlock: document.getElementById("lastUnlock"),
   lockBtn: document.getElementById("lockBtn"),
   unlockBtn: document.getElementById("unlockBtn"),
-  resetAlarmBtn: document.getElementById("resetAlarmBtn"),
   movementValue: document.getElementById("movementValue"),
   movementBar: document.getElementById("movementBar"),
   tiltValue: document.getElementById("tiltValue"),
   tiltBar: document.getElementById("tiltBar"),
-  vibrationValue: document.getElementById("vibrationValue"),
-  vibrationDot: document.getElementById("vibrationDot"),
   sensorUpdated: document.getElementById("sensorUpdated"),
   cameraUrlInput: document.getElementById("cameraUrlInput"),
   saveCameraBtn: document.getElementById("saveCameraBtn"),
   cameraStream: document.getElementById("cameraStream"),
   cameraPlaceholder: document.getElementById("cameraPlaceholder"),
   cameraLink: document.getElementById("cameraLink"),
-  eventsList: document.getElementById("eventsList")
+  eventsList: document.getElementById("eventsList"),
+  pinOverlay: document.getElementById("pinOverlay"),
+  pinForm: document.getElementById("pinForm"),
+  pinInput: document.getElementById("pinInput"),
+  pinError: document.getElementById("pinError")
 };
 
 function formatValue(value, fallback = 0) {
@@ -55,8 +59,8 @@ function clampPercent(value, max) {
   return `${Math.min(100, Math.max(0, (value / max) * 100))}%`;
 }
 
-function getSecurityLevel(movement, tilt, vibration) {
-  if (vibration || movement >= 65 || tilt >= 35) {
+function getSecurityLevel(movement, tilt) {
+  if (movement >= 65 || tilt >= 35) {
     return "HIGH";
   }
 
@@ -88,10 +92,6 @@ function updateCameraLink(cameraUrl, forceReload = false) {
     return;
   }
 
-  if (forceReload) {
-    elements.cameraStream.removeAttribute("src");
-  }
-
   if (forceReload || elements.cameraStream.src !== url) {
     elements.cameraPlaceholder.textContent = "Ucitavanje stream-a...";
     elements.cameraPlaceholder.classList.remove("hidden");
@@ -104,27 +104,44 @@ function updateCameraLink(cameraUrl, forceReload = false) {
   elements.cameraLink.classList.remove("disabled");
 }
 
+function setPinOverlayVisible(visible) {
+  if (pinOverlayVisible === visible) {
+    return;
+  }
+
+  pinOverlayVisible = visible;
+  elements.pinOverlay.classList.toggle("hidden", !visible);
+
+  if (visible) {
+    requestAnimationFrame(() => elements.pinInput.focus());
+  } else {
+    elements.pinInput.value = "";
+    elements.pinError.classList.add("hidden");
+  }
+}
+
 function renderSafe(data = {}) {
   const movement = formatValue(data.movement);
   const tilt = formatValue(data.tilt);
-  const vibration = data.vibration === true;
-  const alarm = data.alarm === true;
+  const alarm = data.alarm === true || tilt >= ALARM_TILT_THRESHOLD_DEG;
+  const alarmSilenced = data.alarmSilenced === true;
 
   updateStatus(data.status);
 
-  elements.alarmState.textContent = alarm ? "Pokusaj obijanja" : "Normalno";
+  elements.alarmState.textContent = alarm
+    ? alarmSilenced ? "Alarm utisan" : "Nagib preko 45 deg"
+    : "Normalno";
   elements.alarmBanner.classList.toggle("hidden", !alarm);
   elements.safeVisual.classList.toggle("alarm", alarm);
   elements.lastEvent.textContent = data.lastEvent || "Nema dogadjaja";
   elements.movementValue.textContent = movement.toFixed(1);
   elements.tiltValue.textContent = `${tilt.toFixed(1)} deg`;
-  elements.vibrationValue.textContent = vibration ? "Da" : "Ne";
-  elements.vibrationDot.classList.toggle("active", vibration);
   elements.movementBar.style.width = clampPercent(movement, 100);
   elements.tiltBar.style.width = clampPercent(tilt, 60);
-  elements.securityLevel.textContent = getSecurityLevel(movement, tilt, vibration);
+  elements.securityLevel.textContent = getSecurityLevel(movement, tilt);
   elements.sensorUpdated.textContent = new Date().toLocaleTimeString("sr-RS");
 
+  setPinOverlayVisible(alarm && !alarmSilenced);
   updateCameraLink(data.cameraUrl);
 }
 
@@ -225,21 +242,28 @@ function writeCommand(command) {
   return refs.commands.update(payload);
 }
 
-function resetAlarm() {
+function silenceAlarm() {
   if (!refs) {
     return Promise.resolve();
   }
 
-  return refs.safe.update({
-    alarm: false,
-    lastEvent: "Alarm resetovan iz web aplikacije"
-  });
+  return refs.commands.update({ silenceAlarm: true });
 }
 
 elements.lockBtn.addEventListener("click", () => writeCommand("lock"));
 elements.unlockBtn.addEventListener("click", () => writeCommand("unlock"));
-elements.resetAlarmBtn.addEventListener("click", resetAlarm);
-elements.resetAlarmTopBtn.addEventListener("click", resetAlarm);
+elements.pinForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  if (elements.pinInput.value.trim() !== ALARM_PIN) {
+    elements.pinError.classList.remove("hidden");
+    elements.pinInput.select();
+    return;
+  }
+
+  elements.pinError.classList.add("hidden");
+  silenceAlarm();
+});
 elements.cameraStream.addEventListener("load", () => {
   elements.cameraPlaceholder.classList.add("hidden");
 });
@@ -263,7 +287,6 @@ renderSafe({
   alarm: false,
   movement: 0,
   tilt: 0,
-  vibration: false,
   lastEvent: isFirebaseConfigured ? "Cekanje Firebase podataka" : "Unesi Firebase konfiguraciju u script.js"
 });
 

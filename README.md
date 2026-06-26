@@ -27,7 +27,6 @@ README.md
 - Crvena LED
 - Zelena LED
 - MPU6050 akcelerometar/ziroskop
-- Digitalni senzor vibracije/udarca
 - Firebase Realtime Database
 - Opcionalno: ESP32-CAM za live video stream
 
@@ -37,11 +36,10 @@ README.md
 | --- | --- |
 | Servo SG90 signal | GPIO13 |
 | Buzzer signal | GPIO14 |
-| Crvena LED | GPIO4 |
-| Zelena LED | GPIO23 |
+| Crvena LED | GPIO23 |
+| Zelena LED | GPIO4 |
 | MPU6050 SDA | GPIO18 |
 | MPU6050 SCL | GPIO19 |
-| Senzor vibracije DO | GPIO15 |
 
 Napomena: LED diode povezati preko odgovarajucih otpornika. Servo je preporucljivo napajati stabilnim spoljnim 5V napajanjem uz zajednicku masu sa ESP32.
 
@@ -52,7 +50,6 @@ safe/status = "locked" ili "unlocked"
 safe/alarm = true/false
 safe/movement = broj
 safe/tilt = broj
-safe/vibration = true/false
 safe/lastEvent = tekst
 safe/cameraUrl = tekst
 commands/lock = true/false
@@ -122,6 +119,26 @@ Dashboard u realnom vremenu cita `safe` i `events` iz Firebase-a. Dugmad upisuju
 - `Otkljucaj`: `commands/unlock = true`, `commands/lock = false`
 - `Reset alarm`: `safe/alarm = false`
 
+## Lokalni text log Firebase statusa
+
+Za cuvanje informacija iz Firebase-a na racunaru pokreni:
+
+```bash
+node tools/firebase_logger.js
+```
+
+Ili dvoklikni `start-firebase-logger.bat`.
+
+Logger pravi fajl `C:\Users\dsusi\OneDrive\Desktop\pametni-sef\PAMETAN_SEF_LOG.txt` i u njega upisuje datum/vreme za:
+
+- pocetno stanje
+- `ZAKLJUCANO`
+- `OTKLJUCANO`
+- `ALARM UKLJUCEN`
+- `ALARM ISKLJUCEN`
+
+Terminal mora ostati otvoren dok zelis da se promene automatski upisuju.
+
 ## Upload koda iz VS Code / PlatformIO
 
 1. Instaliraj VS Code ekstenziju `PlatformIO IDE`.
@@ -163,22 +180,21 @@ Napomena: ESP32-CAM sketch ocekuje da se u `esp32-cam/pametan_sef_camera/` nalaz
 
 ## Alarm logika
 
-ESP32 cita MPU6050 i digitalni senzor vibracije. Iz MPU6050 se racuna:
+ESP32 cita MPU6050. Iz MPU6050 se racuna:
 
 - intenzitet pomeranja kao odstupanje ukupnog ubrzanja od gravitacije
-- nagib kao veca vrednost izmedju pitch i roll uglova
+- nagib kao ugao u odnosu na pocetni kalibrisani polozaj
 
-Ako je sef zakljucan i detektuje se vibracija, veliko pomeranje ili nagib preko praga:
+Ako se detektuje nagib preko 45 stepeni:
 
 - `safe/alarm` postaje `true`
-- `safe/status` ostaje `locked`
-- servo ide u zakljucan polozaj
-- pali se crvena LED
-- gasi se zelena LED
+- servo i `safe/status` ostaju u trenutnom polozaju
+- crvena LED svetli kada je sef zakljucan na 90 stepeni
+- zelena LED svetli kada je sef otkljucan na 0 stepeni
 - aktivira se buzzer
 - dogadjaj se upisuje u `events`
 
-Kada senzori vise ne prelaze prag, ESP32 vraca `safe/alarm` na `false`. Pragovi su u kodu kao `MOVEMENT_THRESHOLD` i `TILT_THRESHOLD_DEG` i treba ih kalibrisati na stvarnom hardveru.
+Kada nagib vise ne prelazi prag, ESP32 vraca `safe/alarm` na `false`. Prag je u kodu kao `TILT_THRESHOLD_DEG` i treba ga kalibrisati na stvarnom hardveru.
 
 ## Security level i brojac pokusaja
 
@@ -186,7 +202,7 @@ Web aplikacija izracunava `Security level`:
 
 - `LOW`: normalno pomeranje i mali nagib
 - `MEDIUM`: srednje pomeranje ili nagib
-- `HIGH`: velika vrednost pomeranja, veliki nagib ili aktivna vibracija
+- `HIGH`: velika vrednost pomeranja ili veliki nagib
 
 Brojac pokusaja obijanja se racuna iz `events` istorije na osnovu alarm dogadjaja.
 

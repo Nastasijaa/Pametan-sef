@@ -25,9 +25,8 @@
     <section class="alarm-banner hidden" id="alarmBanner">
       <div>
         <strong>Alarm aktivan</strong>
-        <span>Detektovan je pokusaj obijanja, udarac ili nagib sefa.</span>
+        <span>Detektovan je nagib sefa preko dozvoljenog ugla.</span>
       </div>
-      <button class="ghost-danger" id="resetAlarmTopBtn" type="button">Reset alarm</button>
     </section>
 
     <section class="hero-grid">
@@ -51,7 +50,6 @@
         <div class="control-row">
           <button class="primary-button" id="lockBtn" type="button">Zakljucaj</button>
           <button class="secondary-button" id="unlockBtn" type="button">Otkljucaj</button>
-          <button class="danger-button" id="resetAlarmBtn" type="button">Reset alarm</button>
         </div>
       </article>
 
@@ -102,14 +100,6 @@
             </div>
             <div class="bar"><span id="tiltBar"></span></div>
           </div>
-
-          <div class="sensor-item split">
-            <div>
-              <span>Vibracija / udarac</span>
-              <strong id="vibrationValue">Ne</strong>
-            </div>
-            <span class="vibration-dot" id="vibrationDot"></span>
-          </div>
         </div>
       </article>
 
@@ -141,6 +131,19 @@
       </div>
     </section>
   </main>
+
+  <section class="pin-overlay hidden" id="pinOverlay" aria-modal="true" role="dialog">
+    <div class="pin-panel">
+      <span class="pin-alert">Alarm aktivan</span>
+      <h2>Unesi PIN</h2>
+      <p>Alarm ce nastaviti da pisti dok se ne unese ispravna sifra.</p>
+      <form id="pinForm">
+        <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="3" />
+        <button class="primary-button" type="submit">Potvrdi</button>
+      </form>
+      <small class="pin-error hidden" id="pinError">Pogresna sifra</small>
+    </div>
+  </section>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
