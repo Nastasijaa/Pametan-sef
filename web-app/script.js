@@ -18,7 +18,7 @@ let database = null;
 let refs = null;
 let pinOverlayVisible = false;
 
-const ALARM_TILT_THRESHOLD_DEG = 45;
+const ALARM_TILT_THRESHOLD_DEG = 30;
 const ALARM_PIN = "000";
 
 const elements = {
@@ -61,19 +61,54 @@ function clampPercent(value, max) {
 
 function getSecurityLevel(movement, tilt) {
   if (movement >= 65 || tilt >= 35) {
-    return "HIGH";
+    return "LOW";
   }
 
   if (movement >= 30 || tilt >= 15) {
     return "MEDIUM";
   }
 
-  return "LOW";
+  return "HIGH";
+}
+
+function localizeDisplayText(value) {
+  const text = String(value || "");
+  const exact = {
+    "Nema alarma": "Nema alarma",
+    "Nagib preko 30 stepeni": "Nagib preko 30 stepeni",
+    "Sef zakljucan komandom": "Sef zaključan komandom",
+    "Sef otkljucan komandom": "Sef otključan komandom",
+    "Sef je zakljucan iz web aplikacije": "Sef je zaključan iz web aplikacije",
+    "Sef je otkljucan iz web aplikacije": "Sef je otključan iz web aplikacije",
+    "Alarm utisan PIN kodom": "Alarm utišan PIN kodom",
+    "Alarm je utisan ispravnim PIN kodom": "Alarm je utišan ispravnim PIN kodom",
+    "ESP32 sistem pametnog sefa je pokrenut": "ESP32 sistem pametnog sefa je pokrenut",
+    "Sistem pokrenut": "Sistem pokrenut",
+    "alarm_silenced": "alarm utišan",
+    "unlock": "otključavanje",
+    "lock": "zaključavanje",
+    "system": "sistem",
+    "event": "događaj"
+  };
+
+  if (exact[text]) {
+    return exact[text];
+  }
+
+  return text
+    .replace(/zakljuc/gi, (match) => match[0] === match[0].toUpperCase() ? "Zaključ" : "zaključ")
+    .replace(/otkljuc/gi, (match) => match[0] === match[0].toUpperCase() ? "Otključ" : "otključ")
+    .replace(/dogadj/gi, (match) => match[0] === match[0].toUpperCase() ? "Događ" : "događ")
+    .replace(/utisan/gi, (match) => match[0] === match[0].toUpperCase() ? "Utišan" : "utišan")
+    .replace(/sacuvan/gi, (match) => match[0] === match[0].toUpperCase() ? "Sačuvan" : "sačuvan")
+    .replace(/ucitan/gi, (match) => match[0] === match[0].toUpperCase() ? "Učitan" : "učitan")
+    .replace(/pokusaj/gi, (match) => match[0] === match[0].toUpperCase() ? "Pokušaj" : "pokušaj")
+    .replace(/sifra/gi, (match) => match[0] === match[0].toUpperCase() ? "Šifra" : "šifra");
 }
 
 function updateStatus(status) {
   const normalized = status === "unlocked" ? "unlocked" : "locked";
-  elements.safeStatus.textContent = normalized === "locked" ? "Zakljucan" : "Otkljucan";
+  elements.safeStatus.textContent = normalized === "locked" ? "Zaključan" : "Otključan";
   elements.safeStatus.classList.toggle("locked", normalized === "locked");
   elements.safeStatus.classList.toggle("unlocked", normalized === "unlocked");
 }
@@ -85,7 +120,7 @@ function updateCameraLink(cameraUrl, forceReload = false) {
   if (!url) {
     elements.cameraStream.removeAttribute("src");
     elements.cameraStream.classList.add("hidden");
-    elements.cameraPlaceholder.textContent = "Nema sacuvanog stream URL-a";
+    elements.cameraPlaceholder.textContent = "Nema sačuvanog stream URL-a";
     elements.cameraPlaceholder.classList.remove("hidden");
     elements.cameraLink.removeAttribute("href");
     elements.cameraLink.classList.add("disabled");
@@ -93,7 +128,7 @@ function updateCameraLink(cameraUrl, forceReload = false) {
   }
 
   if (forceReload || elements.cameraStream.src !== url) {
-    elements.cameraPlaceholder.textContent = "Ucitavanje stream-a...";
+    elements.cameraPlaceholder.textContent = "Učitavanje stream-a...";
     elements.cameraPlaceholder.classList.remove("hidden");
     const separator = url.includes("?") ? "&" : "?";
     elements.cameraStream.src = forceReload ? `${url}${separator}t=${Date.now()}` : url;
@@ -129,11 +164,11 @@ function renderSafe(data = {}) {
   updateStatus(data.status);
 
   elements.alarmState.textContent = alarm
-    ? alarmSilenced ? "Alarm utisan" : "Nagib preko 45 deg"
+    ? alarmSilenced ? "Alarm utišan" : "Nagib preko 30 deg"
     : "Normalno";
   elements.alarmBanner.classList.toggle("hidden", !alarm);
   elements.safeVisual.classList.toggle("alarm", alarm);
-  elements.lastEvent.textContent = data.lastEvent || "Nema dogadjaja";
+  elements.lastEvent.textContent = localizeDisplayText(data.lastEvent || "Nema događaja");
   elements.movementValue.textContent = movement.toFixed(1);
   elements.tiltValue.textContent = `${tilt.toFixed(1)} deg`;
   elements.movementBar.style.width = clampPercent(movement, 100);
@@ -206,14 +241,14 @@ function renderEvents(snapshot) {
   elements.lastUnlock.textContent = lastUnlockEvent ? formatTimestamp(lastUnlockEvent.timestamp) : "-";
 
   if (!events.length) {
-    elements.eventsList.innerHTML = '<div class="empty-state">Nema ucitanih dogadjaja.</div>';
+    elements.eventsList.innerHTML = '<div class="empty-state">Nema učitanih događaja.</div>';
     return;
   }
 
   elements.eventsList.innerHTML = events.slice(0, 30).map((event) => {
-    const type = String(event.type || "event");
+    const type = localizeDisplayText(event.type || "event");
     const typeClass = isAlarmEvent(event) ? "alarm" : isUnlockEvent(event) ? "unlock" : "";
-    const message = event.message || "Dogadjaj bez opisa";
+    const message = localizeDisplayText(event.message || "Događaj bez opisa");
 
     return `
       <article class="event-item">
@@ -287,7 +322,7 @@ renderSafe({
   alarm: false,
   movement: 0,
   tilt: 0,
-  lastEvent: isFirebaseConfigured ? "Cekanje Firebase podataka" : "Unesi Firebase konfiguraciju u script.js"
+  lastEvent: isFirebaseConfigured ? "Čekanje Firebase podataka" : "Unesi Firebase konfiguraciju u script.js"
 });
 
 if (isFirebaseConfigured) {

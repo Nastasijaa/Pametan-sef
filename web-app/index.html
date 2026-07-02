@@ -33,7 +33,7 @@
       <article class="status-panel">
         <div class="panel-header">
           <span>Status sefa</span>
-          <span class="status-badge locked" id="safeStatus">Zakljucan</span>
+          <span class="status-badge locked" id="safeStatus">Zaključan</span>
         </div>
 
         <div class="safe-visual" id="safeVisual" aria-hidden="true">
@@ -48,33 +48,27 @@
         </div>
 
         <div class="control-row">
-          <button class="primary-button" id="lockBtn" type="button">Zakljucaj</button>
-          <button class="secondary-button" id="unlockBtn" type="button">Otkljucaj</button>
+          <button class="primary-button" id="lockBtn" type="button">Zaključaj</button>
+          <button class="secondary-button" id="unlockBtn" type="button">Otključaj</button>
         </div>
       </article>
 
-      <aside class="summary-grid">
-        <article class="metric-card">
-          <span>Alarm</span>
-          <strong id="alarmState">Normalno</strong>
-          <small id="lastEvent">Nema dogadjaja</small>
-        </article>
-        <article class="metric-card">
-          <span>Security level</span>
-          <strong id="securityLevel">LOW</strong>
-          <small>Na osnovu pomeranja i nagiba</small>
-        </article>
-        <article class="metric-card">
-          <span>Ukupno pokusaja</span>
-          <strong id="breakInCount">0</strong>
-          <small>Brojac iz istorije dogadjaja</small>
-        </article>
-        <article class="metric-card">
-          <span>Poslednje otkljucavanje</span>
-          <strong id="lastUnlock">-</strong>
-          <small>Firebase events</small>
-        </article>
-      </aside>
+      <article class="panel camera-panel">
+        <div class="panel-title">
+          <h2>Kamera</h2>
+          <span>ESP32-CAM</span>
+        </div>
+        <label class="camera-label" for="cameraUrlInput">Camera stream URL</label>
+        <div class="camera-row">
+          <input id="cameraUrlInput" type="url" placeholder="http://192.168.1.50:81/stream" />
+          <button class="secondary-button compact" id="saveCameraBtn" type="button">Sačuvaj</button>
+        </div>
+        <div class="camera-preview">
+          <img id="cameraStream" alt="Live kamera" />
+          <span id="cameraPlaceholder">Nema sačuvanog stream URL-a</span>
+        </div>
+        <a class="camera-link disabled" id="cameraLink" target="_blank" rel="noreferrer">Otvori live kameru</a>
+      </article>
     </section>
 
     <section class="content-grid">
@@ -103,31 +97,36 @@
         </div>
       </article>
 
-      <article class="panel">
-        <div class="panel-title">
-          <h2>Kamera</h2>
-          <span>ESP32-CAM</span>
-        </div>
-        <label class="camera-label" for="cameraUrlInput">Camera stream URL</label>
-        <div class="camera-row">
-          <input id="cameraUrlInput" type="url" placeholder="http://192.168.1.50:81/stream" />
-          <button class="secondary-button compact" id="saveCameraBtn" type="button">Sacuvaj</button>
-        </div>
-        <div class="camera-preview">
-          <img id="cameraStream" alt="Live kamera" />
-          <span id="cameraPlaceholder">Nema sacuvanog stream URL-a</span>
-        </div>
-        <a class="camera-link disabled" id="cameraLink" target="_blank" rel="noreferrer">Otvori live kameru</a>
-      </article>
+      <aside class="summary-grid">
+        <article class="metric-card">
+          <span>Alarm</span>
+          <strong id="alarmState">Normalno</strong>
+          <small id="lastEvent">Nema događaja</small>
+        </article>
+        <article class="metric-card">
+          <span>Security level</span>
+          <strong id="securityLevel">LOW</strong>
+          <small>Na osnovu pomeranja i nagiba</small>
+        </article>
+        <article class="metric-card">
+          <span>Ukupno pokušaja</span>
+          <strong id="breakInCount">0</strong>
+          <small>Brojač iz istorije događaja</small>
+        </article>
+        <article class="metric-card">
+          <span>Poslednje otključavanje</span>
+          <strong id="lastUnlock">-</strong>
+          <small>Firebase events</small>
+        </article>
+      </aside>
     </section>
 
     <section class="panel events-panel">
       <div class="panel-title">
-        <h2>Istorija dogadjaja</h2>
-        <span>Najnoviji prvo</span>
+        <h2>Istorija događaja</h2>
       </div>
       <div class="events-list" id="eventsList">
-        <div class="empty-state">Nema ucitanih dogadjaja.</div>
+        <div class="empty-state">Nema učitanih događaja.</div>
       </div>
     </section>
   </main>
@@ -136,12 +135,12 @@
     <div class="pin-panel">
       <span class="pin-alert">Alarm aktivan</span>
       <h2>Unesi PIN</h2>
-      <p>Alarm ce nastaviti da pisti dok se ne unese ispravna sifra.</p>
+      <p>Alarm će nastaviti da pišti dok se ne unese ispravna šifra.</p>
       <form id="pinForm">
         <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" maxlength="3" />
         <button class="primary-button" type="submit">Potvrdi</button>
       </form>
-      <small class="pin-error hidden" id="pinError">Pogresna sifra</small>
+      <small class="pin-error hidden" id="pinError">Pogrešna šifra</small>
     </div>
   </section>
 

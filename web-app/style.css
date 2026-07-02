@@ -126,7 +126,8 @@ h2 {
 }
 
 .hero-grid {
-  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  align-items: stretch;
   margin-bottom: 16px;
 }
 
@@ -141,6 +142,8 @@ h2 {
 
 .status-panel {
   padding: 24px;
+  display: grid;
+  align-content: space-between;
 }
 
 .panel-header,
@@ -293,12 +296,17 @@ button:hover {
 }
 
 .content-grid {
-  grid-template-columns: minmax(0, 1fr) minmax(310px, 0.62fr);
+  grid-template-columns: minmax(300px, 0.68fr) minmax(0, 1fr);
   margin-bottom: 16px;
 }
 
 .panel {
   padding: 20px;
+}
+
+.camera-panel {
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-title {
@@ -356,7 +364,8 @@ button:hover {
   display: grid;
   place-items: center;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  min-height: 260px;
+  flex: 1;
   margin-top: 14px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -524,6 +533,10 @@ input {
   .content-grid {
     grid-template-columns: 1fr;
   }
+
+  .camera-preview {
+    min-height: 280px;
+  }
 }
 
 @media (max-width: 620px) {
@@ -550,6 +563,10 @@ input {
   .status-panel,
   .panel {
     padding: 16px;
+  }
+
+  .camera-preview {
+    min-height: 230px;
   }
 
   .control-row,
